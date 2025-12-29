@@ -1,0 +1,27 @@
+{
+  "name": "e-commerce",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "dev": "nodemon --env-file=.env src/main.js",
+    "lint": "eslint .",
+    "start": "node --env-file=.env src/main.js",
+    "test": "mocha src/**/*.test.js "
+  },
+  "license": "ISC",
+  "volta": {
+    "node": "20.19.5"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
+    "express": "^5.2.1",
+    "postgres": "^3.4.7"
+  },
+  "devDependencies": {
+    "chai": "^6.2.1",
+    "eslint": "^9.39.2",
+    "mocha": "^11.7.5",
+    "nodemon": "^3.1.11",
+    "supertest": "^7.1.4"
+  }
+}
