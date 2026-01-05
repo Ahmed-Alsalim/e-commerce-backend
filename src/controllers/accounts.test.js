@@ -19,14 +19,14 @@ describe('Accounts Controller', () => {
     it('should respond with status 400 if no password is provided', (done) => {
       request(app)
         .post('/accounts/create')
-        .send({ email: 'user@example.com', password: '' })
+        .send({ email: 'account@abcdefg.com', password: '' })
         .expect(400, done);
     });
 
     it('should respond with status 201 if account is created successfully', (done) => {
       request(app)
         .post('/accounts/create')
-        .send({ email: 'user@example.com', password: 'password' })
+        .send({ email: 'account@abcdefg.com', password: 'password' })
         .expect(201, done);
     });
   });
@@ -42,14 +42,14 @@ describe('Accounts Controller', () => {
     it('should respond with status 401 if no password is provided', (done) => {
       request(app)
         .post('/accounts/login')
-        .send({ email: 'user@example.com', password: '' })
+        .send({ email: 'account@abcdefg.com', password: '' })
         .expect(401, done);
     });
 
     it('should respond with status 200 if login is successful', (done) => {
       request(app)
         .post('/accounts/login')
-        .send({ email: 'user@example.com', password: 'password' })
+        .send({ email: 'account@abcdefg.com', password: 'password' })
         .expect(200, done);
     });
   });
@@ -66,7 +66,7 @@ describe('Accounts Controller', () => {
         .get('/accounts/profile')
         .expect(200)
         .expect((res) => {
-          assert.equal(res.body.email, 'user@example.com');
+          assert.equal(res.body.email, 'user@abcdefg.com');
         });
     });
   });

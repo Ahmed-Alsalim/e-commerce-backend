@@ -51,7 +51,7 @@ function getProfile(req, res) {
 
 async function cleanupTestAccounts(req, res) {
   try {
-    await sql`DELETE FROM accounts WHERE email = 'user@example.com'`;
+    await sql`DELETE FROM accounts WHERE email like '%@abcdefg.com'`;
   } catch (error) {
     console.error('Error cleaning up test accounts:', error);
     return res.status(500).send('Internal Server Error');

@@ -1,5 +1,6 @@
 {
   "node-option": [
     "env-file=.env.test"
-  ]
+  ],
+  "spec": "src/**/*.test.js"
 }
