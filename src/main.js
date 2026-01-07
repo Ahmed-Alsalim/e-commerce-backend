@@ -1,8 +1,8 @@
-const accountsRouter = require('./routes/accounts');
 const express = require('express');
 const passport = require('passport');
 const session = require('express-session');
-const sql = require('./config/db');
+const accountsRouter = require('./routes/accounts');
+const productsRouter = require('./routes/products');
 const PORT = process.env.PORT || 3000;
 
 const app = express();
@@ -21,6 +21,7 @@ app.use(passport.session());
 require('./config/passport');
 
 app.use('/accounts', accountsRouter);
+app.use('/products', productsRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
