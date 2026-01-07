@@ -1,5 +1,5 @@
 const sql = require('../config/db');
-const { hash, verify } = require('../utils/authHelper');
+const { hash } = require('../utils/authHelper');
 const passport = require('passport');
 
 async function createAccount(req, res) {

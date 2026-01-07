@@ -1,4 +1,4 @@
-const express = require('express');
+const { Router } = require('express');
 const { requireAuth } = require('../middlewares/auth');
 const {
   createAccount,
@@ -8,7 +8,7 @@ const {
   cleanupTestAccounts,
 } = require('../controllers/accounts');
 
-const router = express.Router();
+const router = Router();
 
 router.post('/create', createAccount);
 router.post('/login', login);
