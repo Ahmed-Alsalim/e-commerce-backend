@@ -4,9 +4,14 @@ const app = require('../main');
 const request = require('supertest');
 
 describe('Products Controller', () => {
-  describe('/products - Auth', async () => {
-    const authAgent = await getAuthAgent();
+  let authAgent;
+  let adminAgent;
+  before(async () => {
+    authAgent = await getAuthAgent();
+    adminAgent = await getAdminAgent();
+  });
 
+  describe('/products - Auth', async () => {
     it('should respond with status 401 if no active session is provided on POST', (done) => {
       request(app).post('/products').expect(401, done);
     });
@@ -25,42 +30,42 @@ describe('Products Controller', () => {
   });
 
   describe('/products - POST', async () => {
-    const adminAgent = await getAdminAgent();
-
     it('should respond with status 201 when a product is created successfully', (done) => {
       it('should respond with status 400 when required fields are missing', (done) => {
-        adminAgent().post('/products').send({ name: '' }).expect(400, done);
+        adminAgent.post('/products').send({ name: '' }).expect(400, done);
       });
 
-      adminAgent()
+      adminAgent
         .post('/products')
-        .send({ code: 'test-product-100', name: 'Test Product', price: 19.99 })
+        .send({
+          code: `test-product-${Date.now().toString()}`,
+          name: 'Test Product',
+          price: 19.99,
+        })
         .expect(201, done);
     });
   });
 
   describe('/products - PUT', async () => {
-    const adminAgent = await getAdminAgent();
-
     it('should respond with status 404 when trying to update a non-existent product', (done) => {
-      adminAgent()
+      adminAgent
         .put('/products/9999')
         .send({ name: 'Updated Product', price: 29.99 })
         .expect(404, done);
     });
 
     it('should respond with status 200 when a product is updated successfully', (done) => {
-      adminAgent()
+      adminAgent
         .post('/products')
         .send({
-          code: 'test-product-999',
+          code: `test-product-${Date.now().toString()}`,
           name: 'Product to Update',
           price: 9.99,
         })
         .expect(201)
         .end((err, res) => {
           if (err) return done(err);
-          adminAgent()
+          adminAgent
             .put(`/products/${res.body.id}`)
             .send({ name: 'Updated Product', price: 14.99 })
             .expect(200, done);
@@ -125,24 +130,22 @@ describe('Products Controller', () => {
   });
 
   describe('/products/:id - DELETE', async () => {
-    const adminAgent = await getAdminAgent();
-
     it('should respond with status 404 when trying to delete a non-existent product', (done) => {
-      adminAgent().delete('/products/999999999').expect(404, done);
+      adminAgent.delete('/products/999999999').expect(404, done);
     });
 
     it('should respond with status 200 when a product is deleted successfully', (done) => {
-      adminAgent()
+      adminAgent
         .post('/products')
         .send({
-          code: 'test-product-delete',
+          code: `test-product-${Date.now().toString()}`,
           name: 'Product to Delete',
           price: 9.99,
         })
         .expect(201)
         .end((err, res) => {
           if (err) return done(err);
-          adminAgent().delete(`/products/${res.body.id}`).expect(200, done);
+          adminAgent.delete(`/products/${res.body.id}`).expect(200, done);
         });
     });
   });

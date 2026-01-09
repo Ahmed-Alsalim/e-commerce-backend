@@ -5,17 +5,22 @@ async function createProduct({ body }, res) {
     return res.status(400).send('Product code is required');
   }
   try {
-    await sql`INSERT INTO products (
-        category, code, description,
-        discount, image_url, variant_code,
-        name, price, quantity
+    const result = await sql`INSERT INTO products (
+        category, code,
+        description, discount,
+        image_url, variant_code,
+        name, price,
+        quantity
       ) VALUES (
-        ${body.category}, ${body.code}, ${body.description},
-        ${body.discount}, ${body.image_url}, ${body.variant_code},
-        ${body.name}, ${body.price}, ${body.quantity}
-      )`;
+        ${body.category || null}, ${body.code},
+        ${body.description || null}, ${body.discount || null},
+        ${body.image_url || null}, ${body.variant_code || null},
+        ${body.name || null}, ${body.price || null},
+        ${body.quantity || null}
+      )
+        RETURNING id`;
 
-    res.sendStatus(201);
+    res.status(201).send({ id: result[0].id });
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -27,21 +32,22 @@ async function updateProduct(req, res) {
     return res.status(400).send('Product ID is required');
   }
 
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).send('At least one field is required to update');
+  }
+
   try {
-    const result = await sql`UPDATE products SET
-        category = ${req.body.category},
-        code = ${req.body.code},
-        description = ${req.body.description},
-        discount = ${req.body.discount}
-        image_url = ${req.body.image_url},
-        name = ${req.body.name},
-        price = ${req.body.price},
-        quantity = ${req.body.quantity},
-        variant_code = ${req.body.variant_code},
-      WHERE id = ${id}`;
+    const result = await sql`UPDATE products SET ${sql(
+      req.body,
+      Object.keys(req.body)
+    )}
+      WHERE id = ${id}
+      RETURNING id`;
+
     if (result.count === 0) {
       return res.status(404).send('Product not found');
     }
+    res.status(200).send({ id: result[0].id });
   } catch (error) {
     res.status(500).send(error.message);
   }
