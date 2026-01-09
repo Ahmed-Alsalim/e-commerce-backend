@@ -3,6 +3,8 @@ const passport = require('passport');
 const session = require('express-session');
 const accountsRouter = require('./routes/accounts');
 const productsRouter = require('./routes/products');
+const cartsRouter = require('./routes/cart');
+
 const PORT = process.env.PORT || 3000;
 
 const app = express();
@@ -22,6 +24,7 @@ require('./config/passport');
 
 app.use('/accounts', accountsRouter);
 app.use('/products', productsRouter);
+app.use('/cart', cartsRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

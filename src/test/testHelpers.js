@@ -5,6 +5,8 @@ const { createAdminAccount } = require('../controllers/accounts');
 async function getAuthAgent() {
   const agent = request.agent(app);
 
+  await agent.delete('/accounts/test/cleanup').expect(200);
+
   await agent
     .post('/accounts/create')
     .send({ email: 'user@abcdefg.com', password: 'password' });
