@@ -7,7 +7,7 @@ function requireAuth(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
-  if (req.isAuthenticated() && req.user.role === 'admin') {
+  if (req.isAuthenticated() && req.user.is_admin) {
     return next();
   }
   res.sendStatus(403);

@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../main');
+const { createAdminAccount } = require('../controllers/accounts');
 
 async function getAuthAgent() {
   const agent = request.agent(app);
@@ -18,17 +19,13 @@ async function getAuthAgent() {
 
 async function getAdminAgent() {
   const agent = request.agent(app);
+  const email = 'admin@abcdefg.com';
+  const password = 'adminpassword';
+  const hashedPassword = await require('../utils/authHelper').hash(password);
 
-  await agent.post('/accounts/create').send({
-    email: 'admin@abcdefg.com',
-    password: 'password',
-    is_admin: true,
-  });
+  await createAdminAccount(email, hashedPassword);
 
-  await agent
-    .post('/accounts/login')
-    .send({ email: 'admin@abcdefg.com', password: 'adminpassword' })
-    .expect(200);
+  await agent.post('/accounts/login').send({ email, password }).expect(200);
 
   return agent;
 }

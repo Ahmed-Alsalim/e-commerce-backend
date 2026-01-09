@@ -2,8 +2,8 @@ const sql = require('../config/db');
 const { hash } = require('../utils/authHelper');
 const passport = require('passport');
 
-async function createAccount(req, res) {
-  const { email, password } = req.body || {};
+async function createAccount({ body }, res) {
+  const { email, password } = body || {};
   if (!email || !password) {
     return res.status(400).send('Email and password are required');
   }
@@ -11,8 +11,11 @@ async function createAccount(req, res) {
   try {
     const hashedPassword = await hash(password);
 
-    await sql`INSERT INTO accounts (email, password_hash) VALUES (${email}, ${hashedPassword})`;
-    res.status(201).send('Account created successfully');
+    const result =
+      await sql`INSERT INTO accounts (email, password_hash, name, address) VALUES (${email}, ${hashedPassword}, ${
+        body.name || null
+      }, ${body.address || null}) RETURNING id`;
+    res.status(201).send({ id: result[0].id });
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -60,10 +63,20 @@ async function cleanupTestAccounts(req, res) {
   res.sendStatus(200);
 }
 
+async function createAdminAccount(email, password_hash) {
+  try {
+    const result =
+      await sql`INSERT INTO accounts (email, password_hash, is_admin) VALUES (${email}, ${password_hash}, true) RETURNING id`;
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
   createAccount,
   login,
   logout,
   getProfile,
   cleanupTestAccounts,
+  createAdminAccount,
 };
