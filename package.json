@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "dev": "nodemon --env-file=.env src/main.js",
+    "dev": "nodemon --env-file=.env.test src/main.js",
     "lint": "eslint .",
     "start": "node --env-file=.env src/main.js",
-    "test": "mocha src/**/*.test.js "
+    "test": "mocha"
   },
   "license": "ISC",
   "volta": {
