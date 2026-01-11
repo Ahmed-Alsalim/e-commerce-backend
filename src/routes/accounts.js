@@ -5,6 +5,9 @@ const {
   login,
   logout,
   getProfile,
+  getAddresses,
+  createAddress,
+  deleteAddress,
   cleanupTestAccounts,
 } = require('../controllers/accounts');
 
@@ -14,6 +17,9 @@ router.post('/create', createAccount);
 router.post('/login', login);
 router.post('/logout', logout);
 router.get('/profile', requireAuth, getProfile);
+router.get('/addresses', requireAuth, getAddresses);
+router.post('/addresses', requireAuth, createAddress);
+router.delete('/addresses/:id', requireAuth, deleteAddress);
 router.delete('/test/cleanup', cleanupTestAccounts);
 
 module.exports = router;

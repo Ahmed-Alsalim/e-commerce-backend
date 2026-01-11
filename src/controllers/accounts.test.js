@@ -70,4 +70,64 @@ describe('Accounts Controller', () => {
         });
     });
   });
+
+  describe('/accounts/addresses', () => {
+    let authAgent;
+    before(async () => {
+      authAgent = await getAuthAgent();
+    });
+
+    it('should respond with status 401 if no active session is provided', async () => {
+      request(app).get('/accounts/addresses').expect(401);
+      request(app).post('/accounts/addresses').expect(401);
+      request(app).delete('/accounts/addresses/1').expect(401);
+    });
+
+    it('should respond with status 200 and addresses array', (done) => {
+      authAgent
+        .get('/accounts/addresses')
+        .expect(200)
+        .expect((res) => {
+          assert.isArray(res.body);
+        })
+        .end(done);
+    });
+
+    it('should respond with status 201 when a new address is created', (done) => {
+      const newAddress = {
+        street1: '123 Main St',
+        city: 'Anytown',
+        zip: '12345',
+        country: 'USA',
+      };
+      authAgent
+        .post('/accounts/addresses')
+        .send(newAddress)
+        .expect(201)
+        .expect((res) => {
+          assert.containsAllKeys(res.body, ['id']);
+        })
+        .end(done);
+    });
+
+    it('should respond with status 400 when creating an address with no data', (done) => {
+      authAgent.post('/accounts/addresses').send({}).expect(400, done);
+    });
+
+    it('should respond with status 200 when an address is deleted', async () => {
+      const newAddress = {
+        street1: '456 Elm St',
+        city: 'Othertown',
+        zip: '67890',
+        country: 'USA',
+      };
+
+      const res = await authAgent
+        .post('/accounts/addresses')
+        .send(newAddress)
+        .expect(201);
+
+      await authAgent.delete(`/accounts/addresses/${res.body.id}`).expect(200);
+    });
+  });
 });
