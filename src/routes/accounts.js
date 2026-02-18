@@ -7,6 +7,7 @@ const {
   getProfile,
   getAddresses,
   createAddress,
+  updateAddress,
   deleteAddress,
   cleanupTestAccounts,
 } = require('../controllers/accounts');
@@ -19,6 +20,7 @@ router.post('/logout', logout);
 router.get('/profile', requireAuth, getProfile);
 router.get('/addresses', requireAuth, getAddresses);
 router.post('/addresses', requireAuth, createAddress);
+router.put('/addresses/:id', requireAuth, updateAddress);
 router.delete('/addresses/:id', requireAuth, deleteAddress);
 router.delete('/test/cleanup', cleanupTestAccounts);
 

@@ -32,12 +32,23 @@ function login(req, res, next) {
       return res.status(401).send(info.message || 'Invalid email or password');
     }
 
+    if (!user.is_active) {
+      return res.status(403).send('Account is inactive');
+    }
+
     req.logIn(user, (err) => {
       if (err) {
         return next(err);
       }
 
-      return res.sendStatus(200);
+      const responseUser = {
+        email: user.email,
+        id: user.id,
+        is_admin: user.is_admin,
+        name: user.name,
+      };
+
+      return res.status(200).json(responseUser);
     });
   })(req, res, next);
 }
@@ -75,11 +86,42 @@ async function createAddress(req, res) {
 
   try {
     const result =
-      await sql`INSERT INTO addresses (account_id, street1, street2, city, zip, country) VALUES (
-        ${accountId}, ${body.street1 || null}, ${body.street2 || null},
-        ${body.city || null}, ${body.zip || null}, ${body.country || null}
+      await sql`INSERT INTO addresses (account_id, full_name, street1, street2, city, zip, country, phone) VALUES (
+        ${accountId}, ${body.full_name || null}, ${body.street1 || null}, ${body.street2 || null},
+        ${body.city || null}, ${body.zip || null}, ${body.country || null}, ${body.phone || null}
       ) RETURNING id`;
     res.status(201).send({ id: result[0].id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+}
+
+async function updateAddress(req, res) {
+  const accountId = req.user.id;
+  const { id } = req.params || {};
+  const { body } = req;
+  if (!id) {
+    return res.status(400).send('Address ID is required');
+  }
+  if (!body || Object.keys(body).length === 0) {
+    return res.status(400).send('Address data is required');
+  }
+
+  try {
+    const result = await sql`UPDATE addresses SET
+          full_name = ${body.full_name || null},
+          street1 = ${body.street1 || null},
+          street2 = ${body.street2 || null},
+          city = ${body.city || null},
+          zip = ${body.zip || null},
+          country = ${body.country || null},
+          phone = ${body.phone || null}
+        WHERE id = ${id} AND account_id = ${accountId}`;
+    if (result.count === 0) {
+      return res.status(404).send('Address not found');
+    }
+    res.sendStatus(200);
   } catch (error) {
     console.error(error);
     res.status(500).send(error.message);
@@ -132,6 +174,7 @@ module.exports = {
   getProfile,
   getAddresses,
   createAddress,
+  updateAddress,
   deleteAddress,
   cleanupTestAccounts,
   createAdminAccount,
