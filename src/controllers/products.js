@@ -51,18 +51,63 @@ async function updateProduct(req, res) {
   }
 }
 
+async function listCategories(req, res) {
+  try {
+    const categories =
+      await sql`SELECT category, COUNT(*)::int AS count FROM products WHERE category IS NOT NULL GROUP BY category`;
+    res
+      .status(200)
+      .json(
+        categories.map((c) => ({ name: c.category, count: Number(c.count) })),
+      );
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+}
+
 async function listProducts(req, res) {
   const limit = parseInt(req.query.limit, 10) || 10;
-  const offset = parseInt(req.query.offset, 10) || 0;
+  const page = parseInt(req.query.page, 10) || 1;
+  const offset = (page - 1) * limit;
+  const categorie = req.query.categorie;
+
   try {
-    const products = await sql`
-      select p.*, array_agg(pi.url) as image_url
-      from products p
-      join product_images pi on p.id = pi.product_id
-      group by p.id
-      LIMIT ${limit} OFFSET ${offset}
-    `;
-    res.status(200).json(products);
+    let products;
+    if (req.query.search) {
+      const searchTerm = `%${req.query.search}%`;
+      products = await sql`
+        select p.*, array_agg(pi.url) as image_url
+        from products p
+        join product_images pi on p.id = pi.product_id
+        ${
+          req.query.search
+            ? sql`
+              WHERE (name ILIKE ${searchTerm}
+              OR code ILIKE ${searchTerm}
+              OR description ILIKE ${searchTerm})
+              `
+            : sql``
+        }
+        ${categorie ? sql`AND p.category ILIKE ${categorie}` : sql``}
+        group by p.id
+        LIMIT ${limit + 1} OFFSET ${offset}
+      `;
+    } else {
+      products = await sql`
+        select p.*, array_agg(pi.url) as image_url
+        from products p
+        join product_images pi on p.id = pi.product_id
+        ${categorie ? sql`WHERE p.category ILIKE ${categorie}` : sql``}
+        group by p.id
+        LIMIT ${limit + 1} OFFSET ${offset}
+      `;
+    }
+    res.status(200).json({
+      data: products.slice(0, limit),
+      page,
+      limit,
+      hasNext: products.length === limit + 1,
+    });
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -106,10 +151,42 @@ async function deleteProduct(req, res) {
   }
 }
 
+async function getProductImages(productId) {
+  try {
+    const imageObjects =
+      await sql`SELECT * FROM product_images WHERE product_id = ${productId}`;
+    return imageObjects.map((img) => img.url);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+}
+
+async function addProductImage(productId, imageUrl) {
+  try {
+    await sql`INSERT INTO product_images (product_id, url)
+      VALUES (${productId}, ${imageUrl})`;
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+}
+
+async function deleteProductImage(productId, imageUrl) {
+  try {
+    await sql`DELETE FROM product_images 
+      WHERE product_id = ${productId} AND url = ${imageUrl}`;
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+}
+
 module.exports = {
   createProduct,
   updateProduct,
+  listCategories,
   listProducts,
   getProductById,
   deleteProduct,
+  getProductImages,
+  addProductImage,
+  deleteProductImage,
 };
