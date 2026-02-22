@@ -19,6 +19,8 @@ tags:
     description: Shopping cart endpoints
   - name: Orders
     description: Order management endpoints
+  - name: Payment
+    description: Stripe checkout and session status
 
 paths:
   /accounts/create:
@@ -1087,6 +1089,84 @@ paths:
           description: Unauthorized
         '404':
           description: Address not found
+
+  /payment/stripe/create-checkout-session:
+    post:
+      tags:
+        - Payment
+      summary: Create Stripe checkout session
+      description: Create an embedded Stripe Checkout session for multiple items. Product details (name, price, discount) are loaded from the database; unit amount per item is (price - discount) in GBP, sent to Stripe in cents.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  description: List of products to pay for
+                  items:
+                    type: object
+                    required:
+                      - productId
+                      - quantity
+                    properties:
+                      productId:
+                        type: integer
+                        description: Product ID (must exist in catalog)
+                      quantity:
+                        type: integer
+                        minimum: 1
+                        description: Quantity to purchase
+      responses:
+        '200':
+          description: Checkout session created; use clientSecret for embedded checkout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clientSecret:
+                    type: string
+                    description: Stripe client secret for the checkout session
+        '500':
+          description: Stripe or server error
+
+  /payment/stripe/session-status:
+    get:
+      tags:
+        - Payment
+      summary: Get checkout session status
+      description: Retrieve the status and customer email for a Stripe Checkout session (e.g. after return from checkout).
+      parameters:
+        - name: session_id
+          in: query
+          required: true
+          description: Stripe Checkout Session ID (e.g. from return URL)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Checkout session status (e.g. complete, open, expired)
+                  customer_email:
+                    type: string
+                    format: email
+                    nullable: true
+                    description: Customer email from checkout
+        '500':
+          description: Stripe or server error
 
 components:
   securitySchemes:
