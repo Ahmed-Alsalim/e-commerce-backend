@@ -1159,7 +1159,11 @@ paths:
                 properties:
                   status:
                     type: string
-                    description: Checkout session status (e.g. complete, open, expired)
+                    enum:
+                      - complete
+                      - open
+                      - expired
+                    description: Checkout session status
                   customer_email:
                     type: string
                     format: email

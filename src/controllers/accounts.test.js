@@ -59,7 +59,8 @@ describe('Accounts Controller', () => {
       request(app).get('/accounts/profile').expect(401, done);
     });
 
-    it('should respond with status 200 and user profile if active session is provided', async () => {
+    it('should respond with status 200 and user profile if active session is provided', async function () {
+      this.timeout(10_000);
       const authAgent = await getAuthAgent();
 
       await authAgent

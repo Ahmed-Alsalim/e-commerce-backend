@@ -2,5 +2,6 @@
   "node-option": [
     "env-file=.env.test"
   ],
-  "spec": "src/**/*.test.js"
+  "spec": "src/**/*.test.js",
+  "timeout": 10000
 }

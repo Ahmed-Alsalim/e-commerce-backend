@@ -151,29 +151,55 @@ async function deleteProduct(req, res) {
   }
 }
 
-async function getProductImages(productId) {
+async function getProductImages(req, res) {
+  const { id } = req.params || {};
+  if (!id) {
+
+    return res.status(400).send('Product ID is required');
+  }
   try {
-    const imageObjects =
-      await sql`SELECT * FROM product_images WHERE product_id = ${productId}`;
-    return imageObjects.map((img) => img.url);
+    const imageObjects = await sql`
+      SELECT url FROM product_images WHERE product_id = ${id} ORDER BY id ASC
+    `;
+    res.status(200).json(imageObjects.map((img) => img.url));
   } catch (error) {
     res.status(500).send(error.message);
   }
 }
 
-async function addProductImage(productId, imageUrl) {
+async function addProductImage(req, res) {
+  const { id } = req.params || {};
+  const { url } = req.body || {};
+  if (!id || !url) {
+
+    return res.status(400).send('Product ID and image URL are required');
+  }
   try {
     await sql`INSERT INTO product_images (product_id, url)
-      VALUES (${productId}, ${imageUrl})`;
+      VALUES (${id}, ${url})`;
+
+    res.sendStatus(201);
   } catch (error) {
     res.status(500).send(error.message);
   }
 }
 
-async function deleteProductImage(productId, imageUrl) {
+async function deleteProductImage(req, res) {
+  const { id } = req.params || {};
+  const imageUrl = req.query?.url;
+  if (!id || !imageUrl) {
+
+    return res.status(400).send('Product ID and image URL are required');
+  }
   try {
-    await sql`DELETE FROM product_images 
-      WHERE product_id = ${productId} AND url = ${imageUrl}`;
+    const result = await sql`DELETE FROM product_images 
+      WHERE product_id = ${id} AND url = ${imageUrl}`;
+    if (result.count === 0) {
+
+      return res.status(404).send('Image not found');
+    }
+
+    res.sendStatus(200);
   } catch (error) {
     res.status(500).send(error.message);
   }

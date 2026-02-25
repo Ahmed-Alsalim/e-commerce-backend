@@ -32,15 +32,47 @@ describe('cart Controller', () => {
     it("should respond with status 200 when an item is added to the user's cart", (done) => {
       authAgent
         .post('/cart')
-        .send({ productId: 1, quantity: 2 })
+        .send({ product_id: 1, quantity: 2 })
         .expect(200, done);
     });
 
-    it("should respond with status 200 when an item is updated in the user's cart", (done) => {
+    it("should respond with status 200 when an item is updated in the user's cart", async () => {
+      await authAgent
+        .post('/cart')
+        .send({ product_id: 1, quantity: 2 })
+        .expect(200);
+
+      await authAgent
+        .post('/cart')
+        .send({ product_id: 1, quantity: 5 })
+        .expect(200);
+    });
+
+    it('should respond with status 200 when quantity is 0 (item removed)', async () => {
+      await authAgent
+        .post('/cart')
+        .send({ product_id: 1, quantity: 2 })
+        .expect(200);
+
+      await authAgent
+        .post('/cart')
+        .send({ product_id: 1, quantity: 0 })
+        .expect(200);
+
+      await authAgent
+        .get('/cart')
+        .expect(200)
+        .expect((res) => {
+          assert.isArray(res.body);
+          assert.strictEqual(res.body.length, 0);
+        });
+    });
+
+    it('should respond with status 400 when quantity is not a number', (done) => {
       authAgent
         .post('/cart')
-        .send({ productId: 1, quantity: 5 })
-        .expect(200, done);
+        .send({ product_id: 1, quantity: '2' })
+        .expect(400, done);
     });
   });
 
@@ -48,7 +80,7 @@ describe('cart Controller', () => {
     it("should respond with status 200 and return the user's cart", async () => {
       await authAgent
         .post('/cart')
-        .send({ productId: 1, quantity: 3 })
+        .send({ product_id: 1, quantity: 3 })
         .expect(200);
 
       await authAgent
@@ -65,7 +97,7 @@ describe('cart Controller', () => {
 
   describe('/cart - DELETE', async () => {
     it("should respond with status 200 when the user's cart is cleared", async () => {
-      await authAgent.post('/cart').send({ productId: 1, quantity: 3 });
+      await authAgent.post('/cart').send({ product_id: 1, quantity: 3 });
 
       await authAgent.delete('/cart').expect(200);
 

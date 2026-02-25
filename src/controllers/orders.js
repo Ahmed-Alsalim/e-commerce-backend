@@ -23,15 +23,15 @@ async function createOrder({ body, user }, res) {
         RETURNING id`;
     const orderId = result[0].id;
 
-    body.items.forEach(async (item) => {
-      await sql`INSERT INTO order_items (
+    await Promise.all(
+      body.items.map((item) => sql`INSERT INTO order_items (
           order_id, product_id,
           quantity, price
         ) VALUES (
           ${orderId}, ${item.productId},
           ${item.quantity}, ${item.price}
-        )`;
-    });
+        )`),
+    );
 
     res.status(201).send({ id: orderId });
   } catch (error) {

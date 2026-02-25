@@ -149,7 +149,20 @@ async function deleteAddress(req, res) {
 
 async function cleanupTestAccounts(req, res) {
   try {
-    await sql`DELETE FROM accounts WHERE email like '%@abcdefg.com'`;
+    const accounts =
+      await sql`SELECT id FROM accounts WHERE email like '%@abcdefg.com'`;
+    const accountIds = accounts.map((a) => a.id);
+    if (accountIds.length === 0) {
+      return res.sendStatus(200);
+    }
+
+    await sql`DELETE FROM order_items WHERE order_id IN (
+      SELECT id FROM orders WHERE account_id = ANY(${accountIds})
+    )`;
+    await sql`DELETE FROM orders WHERE account_id = ANY(${accountIds})`;
+    await sql`DELETE FROM cart_items WHERE account_id = ANY(${accountIds})`;
+    await sql`DELETE FROM addresses WHERE account_id = ANY(${accountIds})`;
+    await sql`DELETE FROM accounts WHERE id = ANY(${accountIds})`;
   } catch (error) {
     console.error('Error cleaning up test accounts:', error);
     return res.status(500).send('Internal Server Error');
