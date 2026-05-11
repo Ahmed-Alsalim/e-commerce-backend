@@ -8,13 +8,13 @@ const cartsRouter = require('./routes/cart');
 const ordersRouter = require('./routes/orders');
 const paymentRouter = require('./routes/payment');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3030;
 
 const app = express();
 
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.BASE_URL,
     credentials: true,
   }),
 );

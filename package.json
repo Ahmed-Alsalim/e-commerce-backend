@@ -10,7 +10,7 @@
   },
   "license": "ISC",
   "volta": {
-    "node": "24.13.0"
+    "node": "24.14.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
